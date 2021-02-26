@@ -131,7 +131,7 @@ func logRequest(req *http.Request) {
 func logResponseExceptForBody(resp *http.Response) {
 	var buf bytes.Buffer
 
-	buf.WriteString(fmt.Sprintf("%s %d %s\n", resp.Proto, resp.StatusCode, resp.Status))
+	buf.WriteString(fmt.Sprintf("%s %s\n", resp.Proto, resp.Status))
 	for k, v := range resp.Header {
 		vs := strings.Join(v, ",")
 		buf.WriteString(fmt.Sprintf("%s: %s\n", k, vs))
