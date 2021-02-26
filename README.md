@@ -26,6 +26,8 @@ gurl http://127.0.0.1:8080/v1/hello
 
 gurl allows you to set the default header.
 
+If you input the header that has the same key as the default header, override the default header.
+
 ```bash
 gurl config 127.0.0.1:8080 header set "Authorization:Bearer foobar"
 
