@@ -1,6 +1,6 @@
 # gurl
 
-gurl is a HTTP client written in Go
+gurl is an HTTP client written in Go
 
 ## Installation
 
