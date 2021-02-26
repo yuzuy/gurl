@@ -2,9 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"flag"
 	"io/ioutil"
 	"os"
+	"strings"
 )
+
+var	hostFlag = flag.String("host", "default", "Using when you want to link the config with the host")
 
 type configFile struct {
 	HostToConfig map[string]config
@@ -57,4 +62,28 @@ func saveConfigFile(cf configFile) error {
 	}
 	_, err = f.Write(cfBytes)
 	return err
+}
+
+func setDefaultHeader(header string) error {
+	cf, err := getConfigFile()
+	if err != nil {
+		return err
+	}
+
+	host := *hostFlag
+	if _, ok := cf.HostToConfig[host]; !ok {
+		cf.HostToConfig[host] = config{
+			Header: make(map[string]string),
+		}
+	}
+
+	tmp := strings.Split(header, ":")
+	if len(tmp) != 2 {
+		return errors.New("invalid header format")
+	}
+	key := tmp[0]
+	val := strings.TrimPrefix(tmp[1], " ")
+	cf.HostToConfig[host].Header[key] = val
+
+	return saveConfigFile(cf)
 }
