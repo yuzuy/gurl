@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 )
@@ -24,6 +25,12 @@ func run() error {
 		switch flag.Arg(1) {
 		case "header":
 			err = setDefaultHeader(flag.Arg(2))
+		}
+	default:
+		var respBody string
+		respBody, err = doHTTPRequest(flag.Arg(0))
+		if err == nil {
+			fmt.Print(respBody)
 		}
 	}
 	return err

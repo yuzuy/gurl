@@ -2,11 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"flag"
 	"io/ioutil"
+	"net/http"
 	"os"
-	"strings"
 )
 
 var	hostFlag = flag.String("host", "default", "Using when you want to link the config with the host")
@@ -17,6 +16,20 @@ type configFile struct {
 
 type config struct {
 	Header map[string]string `json:"header"`
+}
+
+func newConfig() config {
+	return config{
+		Header: make(map[string]string),
+	}
+}
+
+func (c config) header() http.Header {
+	h := make(http.Header)
+	for k, v := range c.Header {
+		h.Add(k, v)
+	}
+	return h
 }
 
 var (
@@ -72,17 +85,13 @@ func setDefaultHeader(header string) error {
 
 	host := *hostFlag
 	if _, ok := cf.HostToConfig[host]; !ok {
-		cf.HostToConfig[host] = config{
-			Header: make(map[string]string),
-		}
+		cf.HostToConfig[host] = newConfig()
 	}
 
-	tmp := strings.Split(header, ":")
-	if len(tmp) != 2 {
-		return errors.New("invalid header format")
+	key, val, err := parseHeader(header)
+	if err != nil {
+		return err
 	}
-	key := tmp[0]
-	val := strings.TrimPrefix(tmp[1], " ")
 	cf.HostToConfig[host].Header[key] = val
 
 	return saveConfigFile(cf)
