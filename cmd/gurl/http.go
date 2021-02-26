@@ -94,10 +94,7 @@ func makeHTTPRequest(urlStr string, conf config) (*http.Request, error) {
 
 func parseHeader(v string) (key, val string, err error) {
 	tmp := strings.Split(v, ":")
-	if len(tmp) != 2 {
-		return "", "", fmt.Errorf("invalid header format: %s", v)
-	}
 	key = tmp[0]
-	val = strings.TrimPrefix(tmp[1], " ")
+	val = strings.Join(tmp[1:], ":")
 	return
 }
