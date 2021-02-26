@@ -21,10 +21,15 @@ func main() {
 func run() error {
 	var err error
 	switch flag.Arg(0) {
-	case "set":
-		switch flag.Arg(1) {
-		case "header":
-			err = setDefaultHeader(flag.Arg(2))
+	case "config":
+		host := flag.Arg(1)
+		switch flag.Arg(2) {
+		case "set":
+			switch flag.Arg(3) {
+			case "header":
+				header := flag.Arg(4)
+				err = setDefaultHeader(header, host)
+			}
 		}
 	default:
 		var respBody string
