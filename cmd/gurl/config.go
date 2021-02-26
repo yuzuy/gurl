@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 )
@@ -72,6 +76,34 @@ func saveConfigFile(cf configFile) error {
 	}
 	_, err = f.Write(cfBytes)
 	return err
+}
+
+func printDefaultHeader(host string) error {
+	header, err := getDefaultHeader(host)
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	buf.WriteString(host + ":\n")
+	for k, v := range header {
+		buf.WriteString(fmt.Sprintf("  %s: %s\n", k, v))
+	}
+	log.Print(buf.String())
+	return nil
+}
+
+func getDefaultHeader(host string) (map[string]string, error) {
+	cf, err := getConfigFile()
+	if err != nil {
+		return nil, err
+	}
+
+	conf, ok := cf.HostToConfig[host]
+	if !ok {
+		return nil, errors.New("the config not set")
+	}
+	return conf.Header, nil
 }
 
 func setDefaultHeader(header, host string) error {

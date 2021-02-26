@@ -23,9 +23,11 @@ func run() error {
 	case "config":
 		host := flag.Arg(1)
 		switch flag.Arg(2) {
-		case "set":
+		case "header":
 			switch flag.Arg(3) {
-			case "header":
+			case "get":
+				err = printDefaultHeader(host)
+			case "set":
 				header := flag.Arg(4)
 				err = setDefaultHeader(header, host)
 			}
