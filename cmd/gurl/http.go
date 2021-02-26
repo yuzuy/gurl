@@ -7,15 +7,20 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
+
+var transactionLogger = log.New(os.Stderr, "", 0)
 
 var (
 	hFlag = &headerFlag{}
 
 	dFlag = flag.String("d", "", "Input the request body")
+	vFlag = flag.Bool("v", false, "Output the verbose log")
 	xFlag = flag.String("X", "GET", "Input the http method")
 )
 
@@ -52,6 +57,9 @@ func doHTTPRequest(urlStr string) (respBody string, err error) {
 	if err != nil {
 		return "", err
 	}
+	if *vFlag {
+		logRequest(req)
+	}
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
@@ -63,6 +71,10 @@ func doHTTPRequest(urlStr string) (respBody string, err error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", errors.New("could not read the response body")
+	}
+	if *vFlag {
+		transactionLogger.Println()
+		logResponseExceptForBody(resp)
 	}
 	return string(body), nil
 }
@@ -97,4 +109,33 @@ func parseHeader(v string) (key, val string, err error) {
 	key = tmp[0]
 	val = strings.Join(tmp[1:], ":")
 	return
+}
+
+func logRequest(req *http.Request) {
+	var buf bytes.Buffer
+
+	buf.WriteString(fmt.Sprintf("%s %s %s\n", req.Method, req.URL.Path, req.Proto))
+	for k, v := range req.Header {
+		vs := strings.Join(v, ",")
+		buf.WriteString(fmt.Sprintf("%s: %s\n", k, vs))
+	}
+
+	body := *dFlag
+	if body != "" {
+		buf.WriteString("\n" + body + "\n")
+	}
+
+	transactionLogger.Println(buf.String())
+}
+
+func logResponseExceptForBody(resp *http.Response) {
+	var buf bytes.Buffer
+
+	buf.WriteString(fmt.Sprintf("%s %d %s\n", resp.Proto, resp.StatusCode, resp.Status))
+	for k, v := range resp.Header {
+		vs := strings.Join(v, ",")
+		buf.WriteString(fmt.Sprintf("%s: %s\n", k, vs))
+	}
+
+	transactionLogger.Println(buf.String())
 }

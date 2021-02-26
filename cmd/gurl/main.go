@@ -9,9 +9,8 @@ import (
 
 func main() {
 	flag.Parse()
-	logger := log.New(os.Stderr, "gurl: ", 0)
-
 	if err := run(); err != nil {
+		logger := log.New(os.Stderr, "gurl: ", 0)
 		logger.Println(err.Error())
 		os.Exit(1)
 	}
@@ -35,7 +34,7 @@ func run() error {
 		var respBody string
 		respBody, err = doHTTPRequest(flag.Arg(0))
 		if err == nil {
-			fmt.Print(respBody)
+			fmt.Println(respBody)
 		}
 	}
 	return err
