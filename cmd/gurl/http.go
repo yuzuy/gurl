@@ -10,11 +10,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 )
-
-var transactionLogger = log.New(os.Stderr, "", 0)
 
 var (
 	hFlag = &headerFlag{}
@@ -73,7 +70,7 @@ func doHTTPRequest(urlStr string) (respBody string, err error) {
 		return "", errors.New("could not read the response body")
 	}
 	if *vFlag {
-		transactionLogger.Println()
+		log.Println()
 		logResponseExceptForBody(resp)
 	}
 	return string(body), nil
@@ -125,7 +122,7 @@ func logRequest(req *http.Request) {
 		buf.WriteString("\n" + body + "\n")
 	}
 
-	transactionLogger.Println(buf.String())
+	log.Println(buf.String())
 }
 
 func logResponseExceptForBody(resp *http.Response) {
@@ -137,5 +134,5 @@ func logResponseExceptForBody(resp *http.Response) {
 		buf.WriteString(fmt.Sprintf("%s: %s\n", k, vs))
 	}
 
-	transactionLogger.Println(buf.String())
+	log.Println(buf.String())
 }

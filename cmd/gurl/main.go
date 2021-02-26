@@ -39,3 +39,7 @@ func run() error {
 	}
 	return err
 }
+
+func init() {
+	log.SetFlags(0)
+}
