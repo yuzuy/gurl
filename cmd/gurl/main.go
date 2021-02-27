@@ -10,8 +10,7 @@ import (
 func main() {
 	flag.Parse()
 	if err := run(); err != nil {
-		logger := log.New(os.Stderr, "gurl: ", 0)
-		logger.Println(err.Error())
+		log.Println("gurl: " + err.Error())
 		os.Exit(1)
 	}
 	os.Exit(0)
@@ -30,6 +29,9 @@ func run() error {
 			case "set":
 				header := flag.Arg(4)
 				err = setDefaultHeader(header, host)
+			case "delete":
+				key := flag.Arg(4)
+				err = deleteDefaultHeader(key, host)
 			}
 		}
 	default:

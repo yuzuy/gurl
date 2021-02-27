@@ -37,4 +37,10 @@ gurl config 127.0.0.1:8080 header get
 #   Authorization: Bearer foobar
 
 gurl http://127.0.0.1:8080 # == gurl -H "Authorization:Bearer foobar" http://127.0.0.1:8080
+
+gurl config 127.0.0.1:8080 header delete Authorization
+
+gurl config 127.0.0.1:8080 header get
+# Output:
+# 127.0.0.1:
 ```

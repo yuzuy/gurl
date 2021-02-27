@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -101,7 +100,7 @@ func getDefaultHeader(host string) (map[string]string, error) {
 
 	conf, ok := cf.HostToConfig[host]
 	if !ok {
-		return nil, errors.New("the config not set")
+		return map[string]string{}, nil
 	}
 	return conf.Header, nil
 }
@@ -121,6 +120,24 @@ func setDefaultHeader(header, host string) error {
 		return err
 	}
 	cf.HostToConfig[host].Header[key] = val
+
+	return saveConfigFile(cf)
+}
+
+func deleteDefaultHeader(key, host string) error {
+	cf, err := getConfigFile()
+	if err != nil {
+		return err
+	}
+
+	conf, ok := cf.HostToConfig[host]
+	if !ok {
+		return nil
+	}
+	if _, ok := conf.Header[key]; !ok {
+		return nil
+	}
+	delete(conf.Header, key)
 
 	return saveConfigFile(cf)
 }
