@@ -43,4 +43,16 @@ gurl config 127.0.0.1:8080 header delete Authorization
 gurl config 127.0.0.1:8080 header get
 # Output:
 # 127.0.0.1:
+
+# pattern matching
+gurl config "127.0.0.1:8080/v1/*" header set "Authorization:Bearer fizzbuzz"
+
+gurl http://127.0.0.1:8080/v1/foo # == gurl -H "Authorization:Bearer fizzbuzz" http://127.0.0.1:8080/v1/foo
+gurl http://127.0.0.1:8080 # == gurl http://127.0.0.1:8080
+
+# endpoint
+gurl config "127.0.0.1:8080/v1/bar" header set "Authorization:Bearer yuzuy"
+
+gurl http://127.0.0.1:8080/v1/bar # == gurl -H "Authorization:Bearer yuzuy" http://127.0.0.1:8080/v1/bar
+gurl http://127.0.0.1:8080/v1/bar/foo # == gurl -H "Authorization:Bearer fizzbuzz" http://127.0.0.1:8080/v1/bar/foo
 ```

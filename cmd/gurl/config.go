@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -20,14 +19,6 @@ func newConfig() config {
 	return config{
 		Header: make(map[string]string),
 	}
-}
-
-func (c config) header() http.Header {
-	h := make(http.Header)
-	for k, v := range c.Header {
-		h.Add(k, v)
-	}
-	return h
 }
 
 var (
@@ -88,45 +79,45 @@ func printDefaultHeader(host string) error {
 	return nil
 }
 
-func getDefaultHeader(host string) (map[string]string, error) {
+func getDefaultHeader(pattern string) (map[string]string, error) {
 	cf, err := getConfigFile()
 	if err != nil {
 		return nil, err
 	}
 
-	conf, ok := cf[host]
+	conf, ok := cf[pattern]
 	if !ok {
 		return map[string]string{}, nil
 	}
 	return conf.Header, nil
 }
 
-func setDefaultHeader(header, host string) error {
+func setDefaultHeader(header, pattern string) error {
 	cf, err := getConfigFile()
 	if err != nil {
 		return err
 	}
 
-	if _, ok := cf[host]; !ok {
-		cf[host] = newConfig()
+	if _, ok := cf[pattern]; !ok {
+		cf[pattern] = newConfig()
 	}
 
 	key, val, err := parseHeader(header)
 	if err != nil {
 		return err
 	}
-	cf[host].Header[key] = val
+	cf[pattern].Header[key] = val
 
 	return saveConfigFile(cf)
 }
 
-func deleteDefaultHeader(key, host string) error {
+func deleteDefaultHeader(key, pattern string) error {
 	cf, err := getConfigFile()
 	if err != nil {
 		return err
 	}
 
-	conf, ok := cf[host]
+	conf, ok := cf[pattern]
 	if !ok {
 		return nil
 	}
