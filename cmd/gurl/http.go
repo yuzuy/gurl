@@ -45,7 +45,7 @@ func doHTTPRequest(urlStr string) (respBody string, err error) {
 	if err != nil {
 		return "", err
 	}
-	conf, ok := cf.HostToConfig[uri.Host]
+	conf, ok := cf[uri.Host]
 	if !ok {
 		conf = config{}
 	}
