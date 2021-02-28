@@ -8,7 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestMakeDefaultHeader(t *testing.T) {
+func TestMakeHeaderFromDefaultHeader(t *testing.T) {
 	cf := configFile{
 		"127.0.0.1:8080": {
 			Header: map[string]string{
@@ -78,13 +78,13 @@ func TestMakeDefaultHeader(t *testing.T) {
 		if err != nil {
 			t.Fatalf("parsing tt.url failed. err=%s", err.Error())
 		}
-		got, err := makeDefaultHeader(uri, cf)
+		got, err := makeHeaderFromDefaultHeader(uri, cf)
 		if err != nil {
-			t.Fatalf("makeDefaultHeader failed. url=%s, err=%s", tt.url, err)
+			t.Fatalf("makeHeaderFromDefaultHeader failed. url=%s, err=%s", tt.url, err)
 		}
 
 		if !cmp.Equal(got, tt.expected) {
-			t.Errorf("makeDefaultHeader wrong. got=%v, expected=%v", got, tt.expected)
+			t.Errorf("makeHeaderFromDefaultHeader wrong. got=%v, expected=%v", got, tt.expected)
 		}
 	}
 }
