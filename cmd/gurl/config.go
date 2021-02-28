@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -20,14 +19,6 @@ func newConfig() config {
 	return config{
 		Header: make(map[string]string),
 	}
-}
-
-func (c config) header() http.Header {
-	h := make(http.Header)
-	for k, v := range c.Header {
-		h.Add(k, v)
-	}
-	return h
 }
 
 var (
