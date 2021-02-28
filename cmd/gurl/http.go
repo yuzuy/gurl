@@ -84,7 +84,7 @@ func makeHTTPRequest(uri *url.URL, cf configFile) (*http.Request, error) {
 		return nil, err
 	}
 
-	defaultHeader, err := makeDefaultHeader(uri, cf)
+	defaultHeader, err := makeHeaderFromDefaultHeader(uri, cf)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func makeHTTPRequest(uri *url.URL, cf configFile) (*http.Request, error) {
 	return req, nil
 }
 
-func makeDefaultHeader(uri *url.URL, cf configFile) (http.Header, error) {
+func makeHeaderFromDefaultHeader(uri *url.URL, cf configFile) (http.Header, error) {
 	header := make(http.Header)
 	for pattern, conf := range cf {
 		pattern = strings.ReplaceAll(pattern, "/", "\\/")
