@@ -10,9 +10,7 @@ import (
 	"os"
 )
 
-type configFile struct {
-	HostToConfig map[string]config
-}
+type configFile map[string]config
 
 type config struct {
 	Header map[string]string `json:"header"`
@@ -52,9 +50,7 @@ func getConfigFile() (configFile, error) {
 		return configFile{}, err
 	}
 	if len(cfBytes) == 0 {
-		cf := configFile{
-			HostToConfig: make(map[string]config),
-		}
+		cf := make(configFile)
 		return cf, nil
 	}
 	var cf configFile
@@ -98,7 +94,7 @@ func getDefaultHeader(host string) (map[string]string, error) {
 		return nil, err
 	}
 
-	conf, ok := cf.HostToConfig[host]
+	conf, ok := cf[host]
 	if !ok {
 		return map[string]string{}, nil
 	}
@@ -111,15 +107,15 @@ func setDefaultHeader(header, host string) error {
 		return err
 	}
 
-	if _, ok := cf.HostToConfig[host]; !ok {
-		cf.HostToConfig[host] = newConfig()
+	if _, ok := cf[host]; !ok {
+		cf[host] = newConfig()
 	}
 
 	key, val, err := parseHeader(header)
 	if err != nil {
 		return err
 	}
-	cf.HostToConfig[host].Header[key] = val
+	cf[host].Header[key] = val
 
 	return saveConfigFile(cf)
 }
@@ -130,7 +126,7 @@ func deleteDefaultHeader(key, host string) error {
 		return err
 	}
 
-	conf, ok := cf.HostToConfig[host]
+	conf, ok := cf[host]
 	if !ok {
 		return nil
 	}
