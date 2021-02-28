@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -103,8 +104,15 @@ func makeHTTPRequest(uri *url.URL, cf configFile) (*http.Request, error) {
 }
 
 func makeHeaderFromDefaultHeader(uri *url.URL, cf configFile) (http.Header, error) {
+	patterns := make([]string, 0, len(cf))
+	for pattern := range cf {
+		patterns = append(patterns, pattern)
+	}
+	sort.Strings(patterns)
+
 	header := make(http.Header)
-	for pattern, conf := range cf {
+	for _, pattern := range patterns {
+		fmt.Println(pattern)
 		pattern = strings.ReplaceAll(pattern, "/", "\\/")
 		pattern = strings.ReplaceAll(pattern, "*", ".*")
 		regex, err := regexp.Compile("^" + pattern + "$")
@@ -118,7 +126,7 @@ func makeHeaderFromDefaultHeader(uri *url.URL, cf configFile) (http.Header, erro
 			continue
 		}
 
-		for k, v := range conf.Header {
+		for k, v := range cf[pattern].Header {
 			header.Set(k, v)
 		}
 	}
