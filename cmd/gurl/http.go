@@ -10,7 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"path"
+	"regexp"
 	"strings"
 )
 
@@ -105,14 +105,15 @@ func makeHTTPRequest(uri *url.URL, cf configFile) (*http.Request, error) {
 func makeDefaultHeader(uri *url.URL, cf configFile) (http.Header, error) {
 	header := make(http.Header)
 	for pattern, conf := range cf {
-		matchHost, err := path.Match(pattern, uri.Host)
+		pattern = strings.ReplaceAll(pattern, "/", "\\/")
+		pattern = strings.ReplaceAll(pattern, "*", ".*")
+		regex, err := regexp.Compile("^" + pattern + "$")
 		if err != nil {
 			return nil, err
 		}
-		matchPattern, err := path.Match(pattern, uri.Host+uri.Path)
-		if err != nil {
-			return nil, err
-		}
+		matchPattern := regex.MatchString(uri.Host + uri.Path)
+
+		matchHost := pattern == uri.Host
 		if !matchHost && !matchPattern {
 			continue
 		}
