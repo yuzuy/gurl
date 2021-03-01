@@ -90,6 +90,9 @@ func makeHTTPRequest(uri *url.URL, cf configFile) (*http.Request, error) {
 		return nil, err
 	}
 	req.Header = defaultHeader
+	if req.Header.Get("User-Agent") == "" {
+		req.Header.Set("User-Agent", "gurl/"+version)
+	}
 
 	header := *hFlag
 	for _, v := range header {

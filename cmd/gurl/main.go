@@ -7,6 +7,8 @@ import (
 	"os"
 )
 
+const version = "0.1.2"
+
 func main() {
 	flag.Parse()
 	if err := run(); err != nil {
