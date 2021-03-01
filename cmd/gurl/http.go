@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"flag"
 	"fmt"
@@ -19,6 +20,7 @@ var (
 	hFlag = &headerFlag{}
 
 	dFlag = flag.String("d", "", "Input the request body")
+	uFlag = flag.String("u", "", "Input username and password for Basic Auth")
 	vFlag = flag.Bool("v", false, "Output the verbose log")
 	xFlag = flag.String("X", "GET", "Input the http method")
 )
@@ -93,6 +95,9 @@ func makeHTTPRequest(uri *url.URL, cf configFile) (*http.Request, error) {
 	if req.Header.Get("User-Agent") == "" {
 		req.Header.Set("User-Agent", "gurl/"+version)
 	}
+	if err := setHeaderForBasicAuth(req); err != nil {
+		return nil, err
+	}
 
 	header := *hFlag
 	for _, v := range header {
@@ -134,6 +139,20 @@ func makeHeaderFromDefaultHeader(uri *url.URL, cf configFile) (http.Header, erro
 	}
 
 	return header, nil
+}
+
+func setHeaderForBasicAuth(req *http.Request) error {
+	authInfo := *uFlag
+	if authInfo == "" {
+		return nil
+	}
+	if !strings.Contains(authInfo, ":") {
+		return errors.New("username and password must be joined by ':'")
+	}
+
+	basic := base64.URLEncoding.EncodeToString([]byte(authInfo))
+	req.Header.Set("Authorization", "Basic "+basic)
+	return nil
 }
 
 func parseHeader(v string) (key, val string, err error) {
