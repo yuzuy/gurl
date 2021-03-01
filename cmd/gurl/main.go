@@ -22,18 +22,23 @@ func run() error {
 	var err error
 	switch flag.Arg(0) {
 	case "config":
-		host := flag.Arg(1)
-		switch flag.Arg(2) {
-		case "header":
-			switch flag.Arg(3) {
-			case "get":
-				err = printDefaultHeader(host)
-			case "set":
-				header := flag.Arg(4)
-				err = setDefaultHeader(header, host)
-			case "delete":
-				key := flag.Arg(4)
-				err = deleteDefaultHeader(key, host)
+		switch flag.Arg(1) {
+		case "get":
+			err = printConfigFile()
+		default:
+			pattern := flag.Arg(1)
+			switch flag.Arg(2) {
+			case "header":
+				switch flag.Arg(3) {
+				case "get":
+					err = printDefaultHeader(pattern)
+				case "set":
+					header := flag.Arg(4)
+					err = setDefaultHeader(header, pattern)
+				case "delete":
+					key := flag.Arg(4)
+					err = deleteDefaultHeader(key, pattern)
+				}
 			}
 		}
 	default:

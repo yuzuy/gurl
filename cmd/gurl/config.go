@@ -64,6 +64,23 @@ func saveConfigFile(cf configFile) error {
 	return err
 }
 
+func printConfigFile() error {
+	cf, err := getConfigFile()
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	for pattern, conf := range cf {
+		buf.WriteString(pattern + "\n")
+		for k, v := range conf.Header {
+			buf.WriteString(fmt.Sprintf("  %s: %s\n", k, v))
+		}
+	}
+	log.Print(buf.String())
+	return nil
+}
+
 func printDefaultHeader(host string) error {
 	header, err := getDefaultHeader(host)
 	if err != nil {
