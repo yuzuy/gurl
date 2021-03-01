@@ -112,7 +112,6 @@ func makeHeaderFromDefaultHeader(uri *url.URL, cf configFile) (http.Header, erro
 
 	header := make(http.Header)
 	for _, pattern := range patterns {
-		fmt.Println(pattern)
 		pattern = strings.ReplaceAll(pattern, "/", "\\/")
 		pattern = strings.ReplaceAll(pattern, "*", ".*")
 		regex, err := regexp.Compile("^" + pattern + "$")
