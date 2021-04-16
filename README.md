@@ -19,6 +19,8 @@ gurl http://127.0.0.1:8080/v1/hello
 #### Flags and Options
 
 - -d - Input the request body
+- -L - Follow redirects
+- -u - Input username and password for Basic Auth
 - -v - Output the verbose log
 - -X - Input the http method
 
