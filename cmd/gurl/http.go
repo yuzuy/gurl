@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/base64"
 	"errors"
 	"flag"
 	"fmt"
@@ -145,8 +144,10 @@ func setHeaderForBasicAuth(req *http.Request) error {
 		return errors.New("username and password must be joined by ':'")
 	}
 
-	basic := base64.URLEncoding.EncodeToString([]byte(authInfo))
-	req.Header.Set("Authorization", "Basic "+basic)
+	tmp := strings.Split(authInfo, ":")
+	username := tmp[0]
+	password := tmp[1]
+	req.SetBasicAuth(username, password)
 	return nil
 }
 
