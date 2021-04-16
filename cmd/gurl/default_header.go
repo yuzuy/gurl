@@ -96,17 +96,16 @@ func getDefaultHeaders() (defaultHeaders, error) {
 	}
 	defer f.Close()
 
-	cfBytes, err := ioutil.ReadAll(f)
+	dhsBytes, err := ioutil.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}
-	if len(cfBytes) == 0 {
-		dfs := make(defaultHeaders)
-		return dfs, nil
+	if len(dhsBytes) == 0 {
+		return make(defaultHeaders), nil
 	}
-	var dfs defaultHeaders
-	err = json.Unmarshal(cfBytes, &dfs)
-	return dfs, err
+	var dhs defaultHeaders
+	err = json.Unmarshal(dhsBytes, &dhs)
+	return dhs, err
 }
 
 func printDefaultHeaders() error {
