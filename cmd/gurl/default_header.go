@@ -146,11 +146,7 @@ func getDefaultHeader(p pattern) (defaultHeader, error) {
 		return nil, err
 	}
 
-	dh, ok := dhs[p]
-	if !ok {
-		return map[string]string{}, nil
-	}
-	return dh, nil
+	return dhs[p], nil
 }
 
 func setDefaultHeader(p pattern, h string) error {
