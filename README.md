@@ -13,7 +13,7 @@ go get github.com/yuzuy/gurl/cmd/gurl
 ### HTTP Request
 
 ```bash
-gurl http://127.0.0.1:8080/v1/hello
+gurl http://localhost:8080/v1/hello
 ```
 
 #### Flags and Options
