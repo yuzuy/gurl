@@ -21,26 +21,25 @@ func main() {
 func run() error {
 	var err error
 	switch flag.Arg(0) {
-	case "config":
+	case "dh":
 		switch flag.Arg(1) {
-		case "get":
-			err = printConfigFile()
+		case "list":
+			err = printDefaultHeaders()
 		default:
-			pattern := flag.Arg(1)
+			pattern := pattern(flag.Arg(1))
 			switch flag.Arg(2) {
-			case "header":
-				switch flag.Arg(3) {
-				case "get":
-					err = printDefaultHeader(pattern)
-				case "set":
-					header := flag.Arg(4)
-					err = setDefaultHeader(header, pattern)
-				case "delete":
-					key := flag.Arg(4)
-					err = deleteDefaultHeader(key, pattern)
-				}
+			case "list":
+				err = printDefaultHeader(pattern)
+			case "set":
+				header := flag.Arg(3)
+				err = setDefaultHeader(pattern, header)
+			case "rm":
+				key := flag.Arg(3)
+				err = deleteDefaultHeader(pattern, key)
 			}
 		}
+	case "":
+		flag.Usage()
 	default:
 		var respBody string
 		respBody, err = doHTTPRequest(flag.Arg(0))

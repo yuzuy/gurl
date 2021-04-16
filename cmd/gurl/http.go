@@ -11,7 +11,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"regexp"
 	"sort"
 	"strings"
 )
@@ -45,11 +44,11 @@ func doHTTPRequest(urlStr string) (respBody string, err error) {
 	if err != nil {
 		return "", fmt.Errorf("could not parse the url: %s", urlStr)
 	}
-	cf, err := getConfigFile()
+	dhs, err := getDefaultHeaders()
 	if err != nil {
 		return "", err
 	}
-	req, err := makeHTTPRequest(uri, cf)
+	req, err := makeHTTPRequest(uri, dhs)
 	if err != nil {
 		return "", err
 	}
@@ -75,7 +74,7 @@ func doHTTPRequest(urlStr string) (respBody string, err error) {
 	return string(body), nil
 }
 
-func makeHTTPRequest(uri *url.URL, cf configFile) (*http.Request, error) {
+func makeHTTPRequest(uri *url.URL, dhs defaultHeaders) (*http.Request, error) {
 	bodyStr := *dFlag
 	var body io.Reader = nil
 	if bodyStr != "" {
@@ -87,7 +86,7 @@ func makeHTTPRequest(uri *url.URL, cf configFile) (*http.Request, error) {
 		return nil, err
 	}
 
-	defaultHeader, err := makeHeaderFromDefaultHeader(uri, cf)
+	defaultHeader, err := makeHeaderFromDefaultHeader(uri, dhs)
 	if err != nil {
 		return nil, err
 	}
@@ -101,39 +100,32 @@ func makeHTTPRequest(uri *url.URL, cf configFile) (*http.Request, error) {
 
 	header := *hFlag
 	for _, v := range header {
-		key, val, err := parseHeader(v)
-		if err != nil {
-			return nil, err
-		}
+		key, val := parseHeader(v)
 		req.Header.Set(key, val)
 	}
 
 	return req, nil
 }
 
-func makeHeaderFromDefaultHeader(uri *url.URL, cf configFile) (http.Header, error) {
-	patterns := make([]string, 0, len(cf))
-	for pattern := range cf {
-		patterns = append(patterns, pattern)
+func makeHeaderFromDefaultHeader(uri *url.URL, dhs defaultHeaders) (http.Header, error) {
+	patternsStr := make([]string, 0, len(dhs))
+	for p := range dhs {
+		patternsStr = append(patternsStr, string(p))
 	}
-	sort.Strings(patterns)
+	sort.Strings(patternsStr)
 
 	header := make(http.Header)
-	for _, pattern := range patterns {
-		pattern = strings.ReplaceAll(pattern, "/", "\\/")
-		pattern = strings.ReplaceAll(pattern, "*", ".*")
-		regex, err := regexp.Compile("^" + pattern + "$")
+	for _, s := range patternsStr {
+		p := pattern(s)
+		match, err := p.match(uri)
 		if err != nil {
 			return nil, err
 		}
-		matchPattern := regex.MatchString(uri.Host + uri.Path)
-
-		matchHost := pattern == uri.Host
-		if !matchHost && !matchPattern {
+		if !match {
 			continue
 		}
 
-		for k, v := range cf[pattern].Header {
+		for k, v := range dhs[p] {
 			header.Set(k, v)
 		}
 	}
@@ -155,7 +147,7 @@ func setHeaderForBasicAuth(req *http.Request) error {
 	return nil
 }
 
-func parseHeader(v string) (key, val string, err error) {
+func parseHeader(v string) (key, val string) {
 	tmp := strings.Split(v, ":")
 	key = tmp[0]
 	val = strings.Join(tmp[1:], ":")
