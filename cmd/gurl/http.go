@@ -18,6 +18,7 @@ var (
 	hFlag = &headerFlag{}
 
 	dFlag = flag.String("d", "", "Input the request body")
+	lFlag = flag.Bool("L", false, "Follow redirects")
 	uFlag = flag.String("u", "", "Input username and password for Basic Auth")
 	vFlag = flag.Bool("v", false, "Output the verbose log")
 	xFlag = flag.String("X", "GET", "Input the http method")
@@ -55,7 +56,7 @@ func doHTTPRequest(urlStr string) (respBody string, err error) {
 		logRequest(req)
 	}
 
-	c := &http.Client{}
+	c := newHTTPClient()
 	resp, err := c.Do(req)
 	if err != nil {
 		return "", err
@@ -71,6 +72,24 @@ func doHTTPRequest(urlStr string) (respBody string, err error) {
 		logResponseExceptForBody(resp)
 	}
 	return string(body), nil
+}
+
+func newHTTPClient() *http.Client {
+	c := &http.Client{}
+	c.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+
+	if *lFlag {
+		c.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			if *vFlag {
+				log.Printf("redirect to: %s\n", req.URL.String())
+			}
+			return nil
+		}
+	}
+
+	return c
 }
 
 func makeHTTPRequest(uri *url.URL, dhs defaultHeaders) (*http.Request, error) {
