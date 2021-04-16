@@ -75,7 +75,10 @@ func (dhs defaultHeaders) set(p pattern, h string) error {
 		dhs[p] = newDefaultHeader()
 	}
 
-	key, val := parseHeader(h)
+	key, val, err := parseHeader(h)
+	if err != nil {
+		return err
+	}
 	dhs[p][key] = val
 
 	return nil
