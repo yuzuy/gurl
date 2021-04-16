@@ -100,7 +100,10 @@ func makeHTTPRequest(uri *url.URL, dhs defaultHeaders) (*http.Request, error) {
 
 	header := *hFlag
 	for _, v := range header {
-		key, val := parseHeader(v)
+		key, val, err := parseHeader(v)
+		if err != nil {
+			return nil, err
+		}
 		req.Header.Set(key, val)
 	}
 
@@ -147,10 +150,14 @@ func setHeaderForBasicAuth(req *http.Request) error {
 	return nil
 }
 
-func parseHeader(v string) (key, val string) {
-	tmp := strings.Split(v, ":")
+func parseHeader(h string) (key, val string, err error) {
+	tmp := strings.Split(h, ":")
+	if len(tmp) < 2 {
+		return "", "", fmt.Errorf("invalid header: %s", h)
+	}
 	key = tmp[0]
 	val = strings.Join(tmp[1:], ":")
+	val = strings.TrimLeft(val, " ")
 	return
 }
 

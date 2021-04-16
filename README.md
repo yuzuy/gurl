@@ -29,30 +29,30 @@ gurl allows you to set the default header.
 If you input the header that has the same key as the default header, override the default header.
 
 ```bash
-gurl config 127.0.0.1:8080 header set "Authorization:Bearer foobar"
+gurl dh set localhost:8080 "Authorization:Bearer foobar"
 
-gurl config 127.0.0.1:8080 header get
+gurl dh list
 # Output:
-# 127.0.0.1:
+# localhost:8080:
 #   Authorization: Bearer foobar
 
-gurl http://127.0.0.1:8080 # == gurl -H "Authorization:Bearer foobar" http://127.0.0.1:8080
+gurl http://localhost:8080 # == gurl -H "Authorization:Bearer foobar" http://localhost:8080
 
-gurl config 127.0.0.1:8080 header delete Authorization
+gurl dh rm localhost:8080 Authorization
 
-gurl config 127.0.0.1:8080 header get
+gurl dh list localhost:8080
 # Output:
-# 127.0.0.1:
+# localhost:8080:
 
 # pattern matching
-gurl config "127.0.0.1:8080/v1/*" header set "Authorization:Bearer fizzbuzz"
+gurl dh set "localhost:8080/v1/*" "Authorization:Bearer fizzbuzz"
 
-gurl http://127.0.0.1:8080/v1/foo # == gurl -H "Authorization:Bearer fizzbuzz" http://127.0.0.1:8080/v1/foo
-gurl http://127.0.0.1:8080 # == gurl http://127.0.0.1:8080
+gurl http://localhost:8080/v1/foo # == gurl -H "Authorization:Bearer fizzbuzz" http://localhost:8080/v1/foo
+gurl http://localhost:8080 # == gurl http://localhost:8080
 
 # endpoint
-gurl config "127.0.0.1:8080/v1/bar" header set "Authorization:Bearer yuzuy"
+gurl dh set localhost:8080/v1/bar "Authorization:Bearer yuzuy"
 
-gurl http://127.0.0.1:8080/v1/bar # == gurl -H "Authorization:Bearer yuzuy" http://127.0.0.1:8080/v1/bar
-gurl http://127.0.0.1:8080/v1/bar/foo # == gurl -H "Authorization:Bearer fizzbuzz" http://127.0.0.1:8080/v1/bar/foo
+gurl http://localhost:8080/v1/bar # == gurl -H "Authorization:Bearer yuzuy" http://localhost:8080/v1/bar
+gurl http://localhost:8080/v1/bar/foo # == gurl -H "Authorization:Bearer fizzbuzz" http://localhost:8080/v1/bar/foo
 ```

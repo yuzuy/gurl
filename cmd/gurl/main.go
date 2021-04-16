@@ -24,19 +24,20 @@ func run() error {
 	case "dh":
 		switch flag.Arg(1) {
 		case "list":
-			err = printDefaultHeaders()
-		default:
-			pattern := pattern(flag.Arg(1))
-			switch flag.Arg(2) {
-			case "list":
-				err = printDefaultHeader(pattern)
-			case "set":
-				header := flag.Arg(3)
-				err = setDefaultHeader(pattern, header)
-			case "rm":
-				key := flag.Arg(3)
-				err = deleteDefaultHeader(pattern, key)
+			p := newPattern(flag.Arg(2))
+			if p == "" {
+				err = printDefaultHeaders()
+			} else {
+				err = printDefaultHeader(p)
 			}
+		case "set":
+			p := newPattern(flag.Arg(2))
+			header := flag.Arg(3)
+			err = setDefaultHeader(p, header)
+		case "rm":
+			p := newPattern(flag.Arg(2))
+			key := flag.Arg(3)
+			err = removeDefaultHeader(p, key)
 		}
 	case "":
 		flag.Usage()

@@ -15,6 +15,10 @@ import (
 
 type pattern string
 
+func newPattern(v string) pattern {
+	return pattern(v)
+}
+
 func (p pattern) match(uri *url.URL) (bool, error) {
 	if uri.Host == string(p) {
 		return true, nil
@@ -71,7 +75,10 @@ func (dhs defaultHeaders) set(p pattern, h string) error {
 		dhs[p] = newDefaultHeader()
 	}
 
-	key, val := parseHeader(h)
+	key, val, err := parseHeader(h)
+	if err != nil {
+		return err
+	}
 	dhs[p][key] = val
 
 	return nil
@@ -162,7 +169,7 @@ func setDefaultHeader(p pattern, h string) error {
 	return dhs.save()
 }
 
-func deleteDefaultHeader(p pattern, key string) error {
+func removeDefaultHeader(p pattern, key string) error {
 	dhs, err := getDefaultHeaders()
 	if err != nil {
 		return err

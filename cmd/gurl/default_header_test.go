@@ -49,10 +49,12 @@ func TestPattern_match(t *testing.T) {
 			uri, err := url.Parse(tt.target)
 			if err != nil {
 				t.Errorf("failed to parse tt.target(=%s): %+v", tt.target, err)
+				return
 			}
 			m, err := tt.p.match(uri)
 			if err != nil {
 				t.Errorf("failed to tt.p.match with tt.target(=%s): %+v", tt.target, err)
+				return
 			}
 			if m != tt.want {
 				t.Errorf("pattern.match wrong. target=%s, want=%t, got=%t", tt.target, tt.want, m)
