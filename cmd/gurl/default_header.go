@@ -116,7 +116,7 @@ func printDefaultHeaders() error {
 
 	var buf bytes.Buffer
 	for p, dh := range dhs {
-		buf.WriteString(string(p) + "\n")
+		buf.WriteString(string(p) + ":\n")
 		for k, v := range dh {
 			buf.WriteString(fmt.Sprintf("  %s: %s\n", k, v))
 		}
