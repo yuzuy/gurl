@@ -19,6 +19,7 @@ gurl http://localhost:8080/v1/hello
 #### Flags and Options
 
 - -d - Input the request body
+- -H - Input the request header
 - -L - Follow redirects
 - -u - Input username and password for Basic Auth
 - -v - Output the verbose log
