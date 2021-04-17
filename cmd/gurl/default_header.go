@@ -66,7 +66,7 @@ func (dhs defaultHeaders) save() error {
 	return err
 }
 
-func (dhs defaultHeaders) set(p pattern, h string) error {
+func (dhs defaultHeaders) add(p pattern, h string) error {
 	if !p.isValid() {
 		return errors.New("invalid pattern")
 	}
@@ -156,13 +156,13 @@ func getDefaultHeader(p pattern) (defaultHeader, error) {
 	return dhs[p], nil
 }
 
-func setDefaultHeader(p pattern, h string) error {
+func addDefaultHeader(p pattern, h string) error {
 	dhs, err := getDefaultHeaders()
 	if err != nil {
 		return err
 	}
 
-	if err := dhs.set(p, h); err != nil {
+	if err := dhs.add(p, h); err != nil {
 		return err
 	}
 
