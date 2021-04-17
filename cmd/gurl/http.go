@@ -128,9 +128,9 @@ func makeHTTPRequest(uri *url.URL, dhs defaultHeaders) (*http.Request, error) {
 	return req, nil
 }
 
-func makeHeaderFromDefaultHeader(uri *url.URL, dhs defaultHeaders) (http.Header, error) {
-	patternsStr := make([]string, 0, len(dhs))
-	for p := range dhs {
+func makeHeaderFromDefaultHeader(uri *url.URL, dhl defaultHeaderList) (http.Header, error) {
+	patternsStr := make([]string, 0, len(dhl))
+	for p := range dhl {
 		patternsStr = append(patternsStr, string(p))
 	}
 	sort.Strings(patternsStr)
@@ -146,7 +146,7 @@ func makeHeaderFromDefaultHeader(uri *url.URL, dhs defaultHeaders) (http.Header,
 			continue
 		}
 
-		for k, v := range dhs[p] {
+		for k, v := range dhl[p] {
 			header.Set(k, v)
 		}
 	}

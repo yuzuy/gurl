@@ -9,7 +9,7 @@ import (
 )
 
 func TestMakeHeaderFromDefaultHeader(t *testing.T) {
-	dhs := defaultHeaders{
+	dhl := defaultHeaderList{
 		"localhost:8080": {
 			"Accept-Language": "en-US",
 			"Content-Type":    "application/json",
@@ -68,7 +68,7 @@ func TestMakeHeaderFromDefaultHeader(t *testing.T) {
 				t.Errorf("parsing tt.url failed. err=%s", err.Error())
 				return
 			}
-			got, err := makeHeaderFromDefaultHeader(uri, dhs)
+			got, err := makeHeaderFromDefaultHeader(uri, dhl)
 			if err != nil {
 				t.Errorf("makeHeaderFromDefaultHeader failed. url=%s, err=%s", tt.url, err)
 				return
