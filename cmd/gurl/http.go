@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"sort"
 	"strings"
 )
 
@@ -40,15 +39,11 @@ func (h *headerFlag) Set(v string) error {
 }
 
 func doHTTPRequest(urlStr string) (respBody string, err error) {
-	uri, err := url.Parse(urlStr)
-	if err != nil {
-		return "", fmt.Errorf("could not parse the url: %s", urlStr)
-	}
-	dhs, err := getDefaultHeaders()
+	dhl, err := getDefaultHeaderList()
 	if err != nil {
 		return "", err
 	}
-	req, err := makeHTTPRequest(uri, dhs)
+	req, err := makeHTTPRequest(urlStr, dhl)
 	if err != nil {
 		return "", err
 	}
@@ -92,7 +87,11 @@ func newHTTPClient() *http.Client {
 	return c
 }
 
-func makeHTTPRequest(uri *url.URL, dhs defaultHeaders) (*http.Request, error) {
+func makeHTTPRequest(urlStr string, dhl defaultHeaderList) (*http.Request, error) {
+	uri, err := url.Parse(urlStr)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse the url: %s", urlStr)
+	}
 	bodyStr := *dFlag
 	var body io.Reader = nil
 	if bodyStr != "" {
@@ -104,11 +103,9 @@ func makeHTTPRequest(uri *url.URL, dhs defaultHeaders) (*http.Request, error) {
 		return nil, err
 	}
 
-	dh, err := makeHeaderFromDefaultHeader(uri, dhs)
-	if err != nil {
+	if err := dhl.set(req); err != nil {
 		return nil, err
 	}
-	req.Header = dh
 	if req.Header.Get("User-Agent") == "" {
 		req.Header.Set("User-Agent", "gurl/"+version)
 	}
@@ -126,32 +123,6 @@ func makeHTTPRequest(uri *url.URL, dhs defaultHeaders) (*http.Request, error) {
 	}
 
 	return req, nil
-}
-
-func makeHeaderFromDefaultHeader(uri *url.URL, dhl defaultHeaderList) (http.Header, error) {
-	patternsStr := make([]string, 0, len(dhl))
-	for p := range dhl {
-		patternsStr = append(patternsStr, string(p))
-	}
-	sort.Strings(patternsStr)
-
-	header := make(http.Header)
-	for _, s := range patternsStr {
-		p := pattern(s)
-		match, err := p.match(uri)
-		if err != nil {
-			return nil, err
-		}
-		if !match {
-			continue
-		}
-
-		for k, v := range dhl[p] {
-			header.Set(k, v)
-		}
-	}
-
-	return header, nil
 }
 
 func setHeaderForBasicAuth(req *http.Request) error {

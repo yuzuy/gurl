@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -51,7 +53,32 @@ func newDefaultHeader() defaultHeader {
 	return make(defaultHeader)
 }
 
-func (dhs defaultHeaders) save() error {
+func (dhl defaultHeaderList) set(req *http.Request) error {
+	pStr := make([]string, 0, len(dhl))
+	for p := range dhl {
+		pStr = append(pStr, string(p))
+	}
+	sort.Strings(pStr)
+
+	for _, s := range pStr {
+		p := pattern(s)
+		match, err := p.match(req.URL)
+		if err != nil {
+			return err
+		}
+		if !match {
+			continue
+		}
+
+		for k, v := range dhl[p] {
+			req.Header.Set(k, v)
+		}
+	}
+
+	return nil
+}
+
+func (dhl defaultHeaderList) save() error {
 	f, err := os.Create(defaultHeadersFilePath)
 	if err != nil {
 		return err
