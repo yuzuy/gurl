@@ -30,10 +30,10 @@ func run() error {
 			} else {
 				err = printDefaultHeader(p)
 			}
-		case "set":
+		case "add":
 			p := newPattern(flag.Arg(2))
 			header := flag.Arg(3)
-			err = setDefaultHeader(p, header)
+			err = addDefaultHeader(p, header)
 		case "rm":
 			p := newPattern(flag.Arg(2))
 			key := flag.Arg(3)

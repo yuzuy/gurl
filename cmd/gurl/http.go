@@ -104,11 +104,11 @@ func makeHTTPRequest(uri *url.URL, dhs defaultHeaders) (*http.Request, error) {
 		return nil, err
 	}
 
-	defaultHeader, err := makeHeaderFromDefaultHeader(uri, dhs)
+	dh, err := makeHeaderFromDefaultHeader(uri, dhs)
 	if err != nil {
 		return nil, err
 	}
-	req.Header = defaultHeader
+	req.Header = dh
 	if req.Header.Get("User-Agent") == "" {
 		req.Header.Set("User-Agent", "gurl/"+version)
 	}
