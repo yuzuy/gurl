@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -45,47 +47,72 @@ func (p pattern) regexp() (*regexp.Regexp, error) {
 
 type defaultHeader map[string]string
 
-type defaultHeaders map[pattern]defaultHeader
+type defaultHeaderList map[pattern]defaultHeader
 
 func newDefaultHeader() defaultHeader {
 	return make(defaultHeader)
 }
 
-func (dhs defaultHeaders) save() error {
+func (dhl defaultHeaderList) set(req *http.Request) error {
+	pStr := make([]string, 0, len(dhl))
+	for p := range dhl {
+		pStr = append(pStr, string(p))
+	}
+	sort.Strings(pStr)
+
+	for _, s := range pStr {
+		p := pattern(s)
+		match, err := p.match(req.URL)
+		if err != nil {
+			return err
+		}
+		if !match {
+			continue
+		}
+
+		for k, v := range dhl[p] {
+			req.Header.Set(k, v)
+		}
+	}
+
+	return nil
+}
+
+func (dhl defaultHeaderList) save() error {
 	f, err := os.Create(defaultHeadersFilePath)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	dhsBytes, err := json.MarshalIndent(dhs, "", "    ")
+	dhlBytes, err := json.MarshalIndent(dhl, "", "    ")
 	if err != nil {
 		return err
 	}
-	_, err = f.Write(dhsBytes)
+	_, err = f.Write(dhlBytes)
 	return err
 }
 
-func (dhs defaultHeaders) add(p pattern, h string) error {
+func (dhl defaultHeaderList) add(p pattern, h string) error {
 	if !p.isValid() {
 		return errors.New("invalid pattern")
 	}
 
-	if _, ok := dhs[p]; !ok {
-		dhs[p] = newDefaultHeader()
+	if _, ok := dhl[p]; !ok {
+		dhl[p] = newDefaultHeader()
 	}
 
 	key, val, err := parseHeader(h)
 	if err != nil {
 		return err
 	}
-	dhs[p][key] = val
+	dhl[p][key] = val
 
 	return nil
 }
 
-func (dhs defaultHeaders) remove(p pattern, k string) {
-	delete(dhs[p], k)
+func (dhl defaultHeaderList) remove(p pattern, k string) {
+	delete(dhl[p], k)
 }
 
 var (
@@ -93,7 +120,7 @@ var (
 	defaultHeadersFilePath = configDirPath + "/default_headers.json"
 )
 
-func getDefaultHeaders() (defaultHeaders, error) {
+func getDefaultHeaderList() (defaultHeaderList, error) {
 	if err := os.MkdirAll(configDirPath, 0755); err != nil {
 		return nil, err
 	}
@@ -103,26 +130,26 @@ func getDefaultHeaders() (defaultHeaders, error) {
 	}
 	defer f.Close()
 
-	dhsBytes, err := ioutil.ReadAll(f)
+	dhlBytes, err := ioutil.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}
-	if len(dhsBytes) == 0 {
-		return make(defaultHeaders), nil
+	if len(dhlBytes) == 0 {
+		return make(defaultHeaderList), nil
 	}
-	var dhs defaultHeaders
-	err = json.Unmarshal(dhsBytes, &dhs)
-	return dhs, err
+	var dhl defaultHeaderList
+	err = json.Unmarshal(dhlBytes, &dhl)
+	return dhl, err
 }
 
 func printDefaultHeaders() error {
-	dhs, err := getDefaultHeaders()
+	dhl, err := getDefaultHeaderList()
 	if err != nil {
 		return err
 	}
 
 	var buf bytes.Buffer
-	for p, dh := range dhs {
+	for p, dh := range dhl {
 		buf.WriteString(string(p) + ":\n")
 		for k, v := range dh {
 			buf.WriteString(fmt.Sprintf("  %s: %s\n", k, v))
@@ -148,34 +175,34 @@ func printDefaultHeader(p pattern) error {
 }
 
 func getDefaultHeader(p pattern) (defaultHeader, error) {
-	dhs, err := getDefaultHeaders()
+	dhl, err := getDefaultHeaderList()
 	if err != nil {
 		return nil, err
 	}
 
-	return dhs[p], nil
+	return dhl[p], nil
 }
 
 func addDefaultHeader(p pattern, h string) error {
-	dhs, err := getDefaultHeaders()
+	dhl, err := getDefaultHeaderList()
 	if err != nil {
 		return err
 	}
 
-	if err := dhs.add(p, h); err != nil {
+	if err := dhl.add(p, h); err != nil {
 		return err
 	}
 
-	return dhs.save()
+	return dhl.save()
 }
 
 func removeDefaultHeader(p pattern, key string) error {
-	dhs, err := getDefaultHeaders()
+	dhl, err := getDefaultHeaderList()
 	if err != nil {
 		return err
 	}
 
-	dhs.remove(p, key)
+	dhl.remove(p, key)
 
-	return dhs.save()
+	return dhl.save()
 }

@@ -1,8 +1,11 @@
 package main
 
 import (
+	"net/http"
 	"net/url"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestPattern_match(t *testing.T) {
@@ -58,6 +61,79 @@ func TestPattern_match(t *testing.T) {
 			}
 			if m != tt.want {
 				t.Errorf("pattern.match wrong. target=%s, want=%t, got=%t", tt.target, tt.want, m)
+			}
+		})
+	}
+}
+
+func TestDefaultHeaderList_set(t *testing.T) {
+	dhl := defaultHeaderList{
+		"localhost:8080": {
+			"Accept-Language": "en-US",
+			"Content-Type":    "application/json",
+		},
+		"localhost:8080/v1/*": {
+			"Authorization": "Basic foo",
+			"Content-Type":  "x-www-form-urlencoded",
+		},
+		"localhost:8080/v1/bar": {
+			"Accept-Charset": "utf-8",
+			"Authorization":  "Basic bar",
+		},
+		"localhost:8888": {
+			"Content-Type": "text/plain",
+		},
+	}
+
+	tests := []struct {
+		name     string
+		url      string
+		expected http.Header
+	}{
+		{
+			name: "set header",
+			url:  "http://localhost:8080/v2/foo",
+			expected: http.Header{
+				"Accept-Language": {"en-US"},
+				"Content-Type":    {"application/json"},
+			},
+		},
+		{
+			name: "the default header for the deeper path has priority",
+			url:  "http://localhost:8080/v1/foo",
+			expected: http.Header{
+				"Accept-Language": {"en-US"},
+				"Authorization":   {"Basic foo"},
+				"Content-Type":    {"x-www-form-urlencoded"},
+			},
+		},
+		{
+			name: "the default header for the more detailed path has priority",
+			url:  "http://localhost:8080/v1/bar",
+			expected: http.Header{
+				"Accept-Charset":  {"utf-8"},
+				"Accept-Language": {"en-US"},
+				"Authorization":   {"Basic bar"},
+				"Content-Type":    {"x-www-form-urlencoded"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet, tt.url, nil)
+			if err != nil {
+				t.Errorf("failed to call http.NewRequest. args=(\"GET\", %s, nil)", tt.url)
+				return
+			}
+			err = dhl.set(req)
+			if err != nil {
+				t.Errorf("makeHeaderFromDefaultHeader failed. url=%s, err=%s", tt.url, err)
+				return
+			}
+
+			if !cmp.Equal(req.Header, tt.expected) {
+				t.Errorf("defaultHeaderList.set wrong. got=%v, expected=%v", req.Header, tt.expected)
 			}
 		})
 	}
